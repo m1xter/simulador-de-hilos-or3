@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualización de datos en tiempo real</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <main class="layout">
+    <section class="panel hero">
+      <h1>Visualización de datos en tiempo real</h1>
+      <p>Compara el rendimiento secuencial, multi thread y multi core sobre un dataset CSV y observa cada gráfica actualizarse a medida que llegan los resultados.</p>
+    </section>
+
+    <section class="panel">
+      <form id="benchmark-form" method="post" class="form-grid">
+        <label>
+          Ruta del dataset CSV
+          <input type="text" name="dataset_path" value="{{ dataset_path }}" required>
+        </label>
+
+        <label>
+          Numero de threads / workers
+          <input type="number" name="workers" min="1" max="32" value="{{ workers }}" required>
+        </label>
+
+        <label>
+          Intensidad de carga CPU
+          <input type="number" name="intensity" min="50" max="100000" value="{{ intensity }}" required>
+        </label>
+
+        <label>
+          Repeticiones por modo
+          <input type="number" name="repeats" min="1" max="8" value="{{ repeats }}" required>
+        </label>
+
+        <button type="submit">Ejecutar experimento</button>
+      </form>
+
+      {% if error %}
+      <div class="error">{{ error }}</div>
+      {% endif %}
+    </section>
+
+    <section class="panel status-panel">
+      <div>
+        <h2>Estado</h2>
+        <p id="status-message">Listo para ejecutar la visualización.</p>
+      </div>
+      <div class="status-meta">
+        <span id="status-step">0/3</span>
+        <span id="status-current">Sin actividad</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Comparación de rendimiento</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Modo</th>
+            <th>Workers</th>
+            <th>Tiempo (s)</th>
+            <th>Speedup</th>
+            <th>CPU (%)</th>
+            <th>Eficiencia</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-row="sequential">
+            <td>Single Thread</td>
+            <td>1</td>
+            <td class="metric">--</td>
+            <td class="metric">--</td>
+            <td class="metric">--</td>
+            <td class="metric">--</td>
+          </tr>
+          <tr data-row="thread">
+            <td>Multi Thread</td>
+            <td id="thread-workers">--</td>
+            <td class="metric">--</td>
+            <td class="metric">--</td>
+            <td class="metric">--</td>
+            <td class="metric">--</td>
+          </tr>
+          <tr data-row="process">
+            <td>Multi Core</td>
+            <td id="process-workers">--</td>
+            <td class="metric">--</td>
+            <td class="metric">--</td>
+            <td class="metric">--</td>
+            <td class="metric">--</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="chart-grid">
+      <section class="panel chart-card">
+        <h2>Tiempo de ejecución</h2>
+        <div class="chart-canvas-wrap">
+          <canvas id="time-chart"></canvas>
+        </div>
+      </section>
+      <section class="panel chart-card">
+        <h2>Speedup</h2>
+        <div class="chart-canvas-wrap">
+          <canvas id="speedup-chart"></canvas>
+        </div>
+      </section>
+      <section class="panel chart-card">
+        <h2>Uso de CPU estimado</h2>
+        <div class="chart-canvas-wrap">
+          <canvas id="cpu-chart"></canvas>
+        </div>
+      </section>
+      <section class="panel chart-card">
+        <h2>Eficiencia paralela</h2>
+        <div class="chart-canvas-wrap">
+          <canvas id="efficiency-chart"></canvas>
+        </div>
+      </section>
+    </section>
+
+    {% if results %}
+    <script id="initial-results" type="application/json">{{ results | tojson }}</script>
+    {% endif %}
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script>
+    const modeOrder = ["sequential", "thread", "process"];
+    const modeLabels = {
+      sequential: "Single Thread",
+      thread: "Multi Thread",
+      process: "Multi Core",
+    };
+    const modeColors = ["#d97706", "#0f766e", "#1d4ed8"];
+
+    const state = {
+      sequential: null,
+      thread: null,
+      process: null,
+    };
+
+    const chartConfig = (label, color, maxSuggested = undefined) => ({
+      type: "bar",
+      data: {
+        labels: ["Single Thread", "Multi Thread", "Multi Core"],
+        datasets: [{
+          label,
+          data: [null, null, null],
+          backgroundColor: [color, color, color],
+          borderWidth: 0,
+          borderRadius: 10,
+          maxBarThickness: 48,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 350 },
+        scales: {
+          y: {
+            beginAtZero: true,
+            suggestedMax: maxSuggested,
+            grid: { color: "rgba(31, 41, 51, 0.08)" },
+          },
+          x: {
+            grid: { display: false },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label(context) {
+                const value = context.raw;
+                return value === null ? "Pendiente" : `${label}: ${Number(value).toFixed(4)}`;
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const charts = {
+      time: new Chart(document.getElementById("time-chart"), chartConfig("Tiempo (s)", "#d97706")),
+      speedup: new Chart(document.getElementById("speedup-chart"), chartConfig("Speedup", "#0f766e", 1.5)),
+      cpu: new Chart(document.getElementById("cpu-chart"), chartConfig("CPU (%)", "#1d4ed8")),
+      efficiency: new Chart(document.getElementById("efficiency-chart"), chartConfig("Eficiencia", "#7c3aed", 1.5)),
+    };
+
+    function formatNumber(value, digits = 4) {
+      return Number(value).toFixed(digits);
+    }
+
+    function updateTable(mode, payload) {
+      const row = document.querySelector(`[data-row="${mode}"]`);
+      if (!row) return;
+      const cells = row.querySelectorAll(".metric");
+      cells[0].textContent = formatNumber(payload.time_seconds);
+      cells[1].textContent = formatNumber(payload.speedup, 3);
+      cells[2].textContent = formatNumber(payload.cpu_percent, 2);
+      cells[3].textContent = formatNumber(payload.efficiency, 3);
+      if (mode === "thread") {
+        document.getElementById("thread-workers").textContent = payload.workers;
+      }
+      if (mode === "process") {
+        document.getElementById("process-workers").textContent = payload.workers;
+      }
+    }
+
+    function updateCharts() {
+      const values = {
+        time: [state.sequential?.time_seconds ?? null, state.thread?.time_seconds ?? null, state.process?.time_seconds ?? null],
+        speedup: [1, state.thread?.speedup ?? null, state.process?.speedup ?? null],
+        cpu: [state.sequential?.cpu_percent ?? null, state.thread?.cpu_percent ?? null, state.process?.cpu_percent ?? null],
+        efficiency: [1, state.thread?.efficiency ?? null, state.process?.efficiency ?? null],
+      };
+
+      charts.time.data.datasets[0].data = values.time;
+      charts.speedup.data.datasets[0].data = values.speedup;
+      charts.cpu.data.datasets[0].data = values.cpu;
+      charts.efficiency.data.datasets[0].data = values.efficiency;
+
+      charts.time.update();
+      charts.speedup.update();
+      charts.cpu.update();
+      charts.efficiency.update();
+    }
+
+    function setStatus(message, stepText = "0/3", current = "Sin actividad") {
+      document.getElementById("status-message").textContent = message;
+      document.getElementById("status-step").textContent = stepText;
+      document.getElementById("status-current").textContent = current;
+    }
+
+    function applyResult(mode, payload) {
+      state[mode] = payload;
+      updateTable(mode, payload);
+      updateCharts();
+    }
+
+    function resetDashboard() {
+      state.sequential = null;
+      state.thread = null;
+      state.process = null;
+
+      document.querySelectorAll(".metric").forEach((cell) => {
+        cell.textContent = "--";
+      });
+      document.getElementById("thread-workers").textContent = "--";
+      document.getElementById("process-workers").textContent = "--";
+
+      for (const chart of Object.values(charts)) {
+        chart.data.datasets[0].data = [null, null, null];
+        chart.update();
+      }
+
+      setStatus("Listo para ejecutar la visualización.", "0/3", "Sin actividad");
+    }
+
+    function hydrateInitialResults() {
+      const node = document.getElementById("initial-results");
+      if (!node) return;
+      try {
+        const data = JSON.parse(node.textContent);
+        for (const mode of modeOrder) {
+          if (data[mode]) {
+            applyResult(mode, data[mode]);
+          }
+        }
+      } catch (error) {
+        console.warn("No se pudieron cargar resultados iniciales", error);
+      }
+    }
+
+    function startStream(formData) {
+      const params = new URLSearchParams(formData);
+      const url = `/benchmark-stream?${params.toString()}`;
+      const source = new EventSource(url);
+      let completed = 0;
+
+      setStatus("Calculando en tiempo real...", "0/3", "Esperando datos");
+
+      source.addEventListener("status", (event) => {
+        const payload = JSON.parse(event.data);
+        setStatus(payload.message, `0/3`, "Inicio");
+      });
+
+      source.addEventListener("result", (event) => {
+        const payload = JSON.parse(event.data);
+        applyResult(payload.mode, payload);
+        completed += 1;
+        setStatus(
+          `Actualizando visualización: ${payload.label}`,
+          `${completed}/3`,
+          `${payload.label} listo`
+        );
+      });
+
+      source.addEventListener("done", (event) => {
+        const payload = JSON.parse(event.data);
+        for (const mode of modeOrder) {
+          if (payload[mode]) {
+            applyResult(mode, payload[mode]);
+          }
+        }
+        setStatus("Visualización completada.", "3/3", "Resultados listos");
+        source.close();
+      });
+
+      source.addEventListener("stream-error", (event) => {
+        const payload = JSON.parse(event.data);
+        const message = payload.message || "Se produjo un error durante la visualización.";
+        setStatus(message, `${completed}/3`, "Error");
+        source.close();
+      });
+
+      source.onerror = () => {
+        if (source.readyState === EventSource.CLOSED) {
+          return;
+        }
+        setStatus("La conexión del stream se interrumpió.", `${completed}/3`, "Error");
+        source.close();
+      };
+    }
+
+    document.getElementById("benchmark-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      resetDashboard();
+      const formData = new FormData(event.currentTarget);
+      startStream(formData);
+    });
+
+    hydrateInitialResults();
+  </script>
+</body>
+</html>
