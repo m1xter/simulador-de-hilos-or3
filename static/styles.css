@@ -1,3 +1,6 @@
+/* ==========================================================================
+   VARIABLES Y TEMAS
+   ========================================================================== */
 :root {
   --bg-top: #f2eee8;
   --bg-bottom: #f7faf9;
@@ -7,11 +10,38 @@
   --accent-3: #1d4ed8;
   --panel: rgba(255, 255, 255, 0.78);
   --line: rgba(38, 70, 83, 0.15);
+
+  /* Simulación */
+  --sim-bg: rgba(30, 41, 59, 0.05);
+  --sim-line: #00ff88;
+  --sim-particle: #ffffff;
+  --sim-core-bg: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+  --sim-core-border: rgba(30, 64, 175, 0.4);
+  --sim-core-shadow: rgba(29, 78, 216, 0.3);
+  --sim-core-text: #ffffff;
+  --sim-core-glow: rgba(59, 130, 246, 0.5);
 }
 
-* {
-  box-sizing: border-box;
+[data-theme="dark"] {
+  --bg-top: #1a1a1a;
+  --bg-bottom: #121212;
+  --ink: #f7faf9;
+  --panel: rgba(30, 41, 59, 0.85);
+  --line: rgba(255, 255, 255, 0.1);
+
+  --sim-bg: rgba(0, 0, 0, 0.25);
+  --sim-line: #39ff14;
+  --sim-particle: #fff700;
+  --sim-core-bg: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  --sim-core-border: rgba(147, 197, 253, 0.3);
+  --sim-core-shadow: rgba(0, 0, 0, 0.6);
+  --sim-core-glow: rgba(96, 165, 250, 0.8);
 }
+
+/* ==========================================================================
+   ESTRUCTURA Y LAYOUT
+   ========================================================================== */
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -27,6 +57,22 @@ body {
   width: min(1100px, 94%);
   margin: 2.2rem auto;
   display: grid;
+  gap: 1.2rem;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--panel);
+  backdrop-filter: blur(8px);
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* Grillas */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
 }
 
@@ -36,103 +82,129 @@ body {
   gap: 1.25rem;
 }
 
-.panel {
+/* ==========================================================================
+   COMPONENTES
+   ========================================================================== */
+.header-flex { display: flex; justify-content: space-between; align-items: center; }
+
+.theme-btn {
+  background: var(--line);
   border: 1px solid var(--line);
-  border-radius: 20px;
-  background: var(--panel);
-  backdrop-filter: blur(6px);
-  padding: 1.1rem 1.2rem;
-  box-shadow: 0 10px 30px rgba(38, 70, 83, 0.08);
-  animation: rise 400ms ease;
-}
-
-.hero h1 {
-  margin: 0 0 0.4rem 0;
-  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
-}
-
-.hero p {
-  margin: 0;
-  max-width: 70ch;
-}
-
-.status-panel {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: center;
-}
-
-.status-panel h2,
-.chart-card h2 {
-  margin-top: 0;
-}
-
-.status-meta {
-  display: grid;
-  justify-items: end;
-  gap: 0.3rem;
-  font-family: "IBM Plex Mono", monospace;
-  color: var(--accent-3);
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 0.8rem;
-  align-items: end;
-}
-
-label {
-  display: grid;
-  gap: 0.38rem;
-  font-size: 0.92rem;
+  border-radius: 50%;
+  width: 45px; height: 45px;
+  cursor: pointer; font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
 }
 
 input {
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 0.62rem 0.68rem;
-  font-family: "IBM Plex Mono", monospace;
-  background: rgba(255, 255, 255, 0.86);
-}
-
-button {
-  border: 0;
-  border-radius: 12px;
-  background: linear-gradient(120deg, var(--accent), #f4a261);
-  color: white;
-  font-weight: 700;
-  padding: 0.72rem 1rem;
-  cursor: pointer;
-  transition: transform 130ms ease;
-}
-
-button:hover {
-  transform: translateY(-1px);
-}
-
-.chart-card {
-  min-height: 360px;
-}
-
-.chart-canvas-wrap {
-  position: relative;
-  height: 260px;
-}
-
-.chart-card canvas {
-  display: block;
-  width: 100%;
-  height: 100% !important;
-}
-
-.error {
-  margin-top: 0.8rem;
-  border-radius: 10px;
-  background: #ffe3de;
-  color: #8a2d1f;
   padding: 0.7rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+  width: 100%;
+}
+
+button[type="submit"] {
+  background: linear-gradient(120deg, var(--accent), #f4a261);
+  border: 0; padding: 0.8rem; color: white; font-weight: 700;
+  border-radius: 12px; cursor: pointer;
+}
+
+.status-meta {
+  display: flex; gap: 1rem;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--accent-3);
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   MOTOR DE SIMULACIÓN
+   ========================================================================== */
+#thread-canvas-container {
+  width: 100%;
+  min-height: 340px;
+  background: var(--sim-bg);
+  border: 1px dashed var(--line);
+  border-radius: 15px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding: 2.5rem 0;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.core-node {
+  width: 55px; height: 55px;
+  margin-left: 35px;
+  background: var(--sim-core-bg);
+  border: 1px solid var(--sim-core-border);
+  border-radius: 12px;
+  color: var(--sim-core-text);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'IBM Plex Mono', monospace; font-weight: 700;
+  box-shadow: 0 4px 12px var(--sim-core-shadow);
+  z-index: 10; position: relative;
+  animation: core-idle-pulse 3s infinite ease-in-out;
+}
+
+.core-node.active { animation: core-active-glow 0.4s ease-in-out; }
+
+.thread-line {
+  position: absolute;
+  height: 2px;
+  background: var(--sim-line);
+  left: 90px; right: 30px;
+  opacity: 0.7;
+  box-shadow: 0 0 10px var(--sim-line), 0 0 20px var(--sim-line);
+  z-index: 1;
+}
+
+.data-particle {
+  position: absolute; width: 10px; height: 10px;
+  background: var(--sim-particle); border-radius: 50%; z-index: 5;
+  box-shadow: 0 0 8px var(--sim-particle);
+}
+
+/* Gráficas */
+.chart-card { min-height: 360px; }
+.chart-canvas-wrap { position: relative; height: 260px; }
+
+/* Animaciones */
+@keyframes core-idle-pulse {
+  50% { box-shadow: 0 4px 20px var(--sim-core-glow); }
+}
+@keyframes core-active-glow {
+  50% { transform: scale(1.1); filter: brightness(1.4); }
+}
+
+
+/* ==========================================================================
+   CORRECCIONES PARA TABLAS Y GRÁFICAS (REPARACIÓN)
+   ========================================================================== */
+
+/* 1. Asegurar que las tarjetas de gráficas tengan altura */
+.chart-card {
+  min-height: 400px; /* Evita que se vean como una línea delgada */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* 2. Contenedor interno del canvas para que Chart.js sepa cuánto medir */
+.chart-card canvas {
+  width: 100% !important;
+  height: 300px !important; /* Altura fija para que aparezcan las barras */
+  margin-top: auto;
+}
+
+/* 3. Estilos para la tabla de métricas */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 1rem;
 }
 
 table {
@@ -142,63 +214,50 @@ table {
   font-size: 0.9rem;
 }
 
-th,
-td {
-  border-bottom: 1px solid var(--line);
-  text-align: left;
-  padding: 0.66rem;
-}
-
-td.metric {
-  font-family: "IBM Plex Mono", monospace;
-}
-
 th {
-  background: rgba(42, 157, 143, 0.08);
+  text-align: left;
+  padding: 12px;
+  border-bottom: 2px solid var(--line);
+  color: var(--accent-2);
+  text-transform: uppercase;
 }
 
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
 }
 
-@media (max-width: 700px) {
-  .chart-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
+tr:hover {
+  background: rgba(42, 157, 143, 0.05); /* Resaltado sutil al pasar el mouse */
+}
 
-  .panel {
-    padding: 0.95rem;
-    border-radius: 14px;
-  }
+.metric {
+  font-weight: bold;
+  color: var(--accent-3);
+}
 
-  .status-panel {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+/* 4. Ajuste para el botón de ejecución */
+.btn-primary {
+  background: linear-gradient(120deg, var(--accent), #f4a261);
+  border: 0;
+  padding: 0.8rem 1.5rem;
+  color: white;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
 
-  .status-meta {
-    justify-items: start;
-  }
+.btn-primary:hover {
+  transform: scale(1.02);
+  filter: brightness(1.1);
+}
 
-  th,
-  td {
-    padding: 0.45rem;
-    font-size: 0.77rem;
-  }
-
-  .chart-card {
-    min-height: 320px;
-  }
-
-  .chart-canvas-wrap {
-    height: 220px;
-  }
+/* 5. Estilo para los títulos de las gráficas */
+.chart-card h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  border-left: 4px solid var(--accent);
+  padding-left: 10px;
 }
