@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glosario Tecnico | Analizador Multicore</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <main class="layout glossary-layout">
+    <header class="panel hero glossary-hero header-flex">
+      <div>
+        <p class="kicker">Diccionario tecnico del analizador</p>
+        <h1>Glosario del Simulador</h1>
+        <p>Definiciones clave para interpretar resultados de escalabilidad, rendimiento y procesamiento paralelo.</p>
+        <p class="glossary-meta">{{ glossary_total }} terminos disponibles</p>
+        <div class="glossary-header-actions">
+          <a class="btn-secondary" href="{{ url_for('index') }}">Volver al Analizador</a>
+        </div>
+      </div>
+      <button id="theme-toggle" class="theme-btn" aria-label="Cambiar tema">
+        <span id="theme-icon">🌙</span>
+      </button>
+    </header>
+
+    <section class="panel glossary-index" aria-label="Indice de letras">
+      <h2>Indice alfabetico</h2>
+      <div class="letter-chip-row">
+        {% for letter in glossary_letters %}
+        <a href="#letter-{{ letter }}" class="letter-chip">{{ letter }}</a>
+        {% endfor %}
+      </div>
+    </section>
+
+    {% for letter, terms in glossary_terms.items() %}
+    <section id="letter-{{ letter }}" class="glossary-section" aria-label="Terminos con {{ letter }}">
+      <header class="dictionary-letter-header">
+        <span class="dictionary-cap" aria-hidden="true">{{ letter }}</span>
+        <div>
+          <h2>Letra {{ letter }}</h2>
+          <p>{{ terms|length }} terminos</p>
+        </div>
+      </header>
+
+      <dl class="dictionary-list">
+        {% for item in terms %}
+        <div class="dictionary-entry">
+          <dt>{{ item.term }}</dt>
+          <dd>{{ item.definition }}</dd>
+        </div>
+        {% endfor %}
+      </dl>
+    </section>
+    {% endfor %}
+  </main>
+
+  <script>
+    (function() {
+      const html = document.documentElement;
+      const themeToggle = document.getElementById("theme-toggle");
+      const themeIcon = document.getElementById("theme-icon");
+
+      const applyTheme = (theme) => {
+        html.setAttribute("data-theme", theme);
+        themeIcon.innerText = theme === "dark" ? "☀️" : "🌙";
+      };
+
+      const initialTheme = localStorage.getItem("theme") || "light";
+      applyTheme(initialTheme);
+
+      themeToggle.addEventListener("click", () => {
+        const current = html.getAttribute("data-theme") || "light";
+        const next = current === "dark" ? "light" : "dark";
+        applyTheme(next);
+        localStorage.setItem("theme", next);
+      });
+    })();
+  </script>
+</body>
+</html>

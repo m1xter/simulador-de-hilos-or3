@@ -76,6 +76,13 @@ body {
   gap: 1rem;
 }
 
+.form-actions {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .chart-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -109,6 +116,26 @@ button[type="submit"] {
   background: linear-gradient(120deg, var(--accent), #f4a261);
   border: 0; padding: 0.8rem; color: white; font-weight: 700;
   border-radius: 12px; cursor: pointer;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 1.2rem;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(42, 157, 143, 0.14);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 700;
+  transition: transform 0.2s, filter 0.2s, background 0.2s;
+}
+
+.btn-secondary:hover {
+  transform: scale(1.02);
+  filter: brightness(1.03);
+  background: rgba(42, 157, 143, 0.24);
 }
 
 .status-meta {
@@ -260,4 +287,195 @@ tr:hover {
   font-size: 1.2rem;
   border-left: 4px solid var(--accent);
   padding-left: 10px;
+}
+
+/* ==========================================================================
+   GLOSARIO
+   ========================================================================== */
+.glossary-layout {
+  gap: 1rem;
+}
+
+.glossary-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.glossary-hero::before {
+  content: "";
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  right: -90px;
+  top: -130px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(231, 111, 81, 0.24), rgba(231, 111, 81, 0));
+  pointer-events: none;
+}
+
+.kicker {
+  margin: 0;
+  font-family: "IBM Plex Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-3);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.glossary-meta {
+  margin: 0.35rem 0 0;
+  color: var(--accent-2);
+  font-weight: 700;
+}
+
+.glossary-header-actions {
+  margin-top: 1rem;
+}
+
+.glossary-index h2 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--accent-2);
+}
+
+.letter-chip-row {
+  margin-top: 0.8rem;
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.letter-chip {
+  min-width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--ink);
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 700;
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.34), rgba(29, 78, 216, 0.1));
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.letter-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(29, 78, 216, 0.2);
+}
+
+.glossary-section {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  padding: 1rem 1rem 0.9rem;
+  border: 1px solid rgba(38, 70, 83, 0.18);
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0.24));
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
+}
+
+.glossary-section::after {
+  content: "";
+  position: absolute;
+  right: -40px;
+  bottom: -40px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(42, 157, 143, 0.16), rgba(42, 157, 143, 0));
+  pointer-events: none;
+}
+
+.dictionary-letter-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  margin-bottom: 0.55rem;
+}
+
+.dictionary-cap {
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: clamp(4.2rem, 9vw, 6.2rem);
+  font-weight: 700;
+  line-height: 0.78;
+  min-width: 0.9em;
+  color: #0f4c81;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.85), 0 8px 16px rgba(15, 76, 129, 0.18);
+}
+
+.dictionary-letter-header h2 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: 1.14rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+.dictionary-letter-header p {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  font-family: "IBM Plex Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-2);
+}
+
+.dictionary-list {
+  margin: 0;
+  padding: 0;
+  border-top: 1px dashed rgba(38, 70, 83, 0.2);
+  display: grid;
+  gap: 0.75rem;
+  padding-top: 0.85rem;
+}
+
+.dictionary-entry {
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(38, 70, 83, 0.16);
+  border-radius: 12px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.2));
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
+}
+
+.dictionary-entry dt {
+  font-family: Georgia, serif;
+  font-size: 1.06rem;
+  font-weight: 700;
+  color: #184e77;
+  margin: 0;
+}
+
+.dictionary-entry dd {
+  margin: 0;
+  padding-left: 0.95rem;
+  margin-top: 0.38rem;
+  border-left: 2px solid rgba(42, 157, 143, 0.28);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .dictionary-letter-header {
+    gap: 0.65rem;
+  }
+
+  .dictionary-cap {
+    font-size: clamp(3.1rem, 12vw, 4.2rem);
+  }
+
+  .dictionary-entry dd {
+    padding-left: 0.9rem;
+  }
+
+  .form-actions {
+    width: 100%;
+  }
+
+  .form-actions > * {
+    flex: 1 1 auto;
+  }
 }
