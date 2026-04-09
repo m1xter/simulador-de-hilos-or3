@@ -4,13 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Glosario Tecnico | Analizador Multicore</title>
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme) {
+        document.documentElement.setAttribute("data-theme", savedTheme);
+      }
+    })();
+  </script>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body>
+<body class="glossary-page">
   <main class="layout glossary-layout">
     <header class="panel hero glossary-hero header-flex">
       <div>
-        <p class="kicker">Diccionario tecnico del analizador</p>
         <h1>Glosario del Simulador</h1>
         <p>Definiciones clave para interpretar resultados de escalabilidad, rendimiento y procesamiento paralelo.</p>
         <p class="glossary-meta">{{ glossary_total }} terminos disponibles</p>
@@ -65,7 +72,7 @@
         themeIcon.innerText = theme === "dark" ? "☀️" : "🌙";
       };
 
-      const initialTheme = localStorage.getItem("theme") || "light";
+      const initialTheme = html.getAttribute("data-theme") || localStorage.getItem("theme") || "light";
       applyTheme(initialTheme);
 
       themeToggle.addEventListener("click", () => {

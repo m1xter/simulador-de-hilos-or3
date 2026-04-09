@@ -36,10 +36,6 @@ GLOSSARY_TERMS = {
             "definition": "Unidad de procesamiento que ejecuta instrucciones y reparte trabajo entre hilos o nucleos.",
         },
         {
-            "term": "Checksum",
-            "definition": "Valor numerico de control que valida que los modos calculan resultados consistentes.",
-        },
-        {
             "term": "Core",
             "definition": "Nucleo fisico o logico de la CPU capaz de procesar tareas en paralelo.",
         },
@@ -62,10 +58,6 @@ GLOSSARY_TERMS = {
         {
             "term": "Eficiencia",
             "definition": "Relacion entre speedup y cantidad de workers. Indica que tan bien se aprovecha el paralelismo.",
-        },
-        {
-            "term": "Event Stream",
-            "definition": "Canal de eventos en tiempo real (SSE) usado para actualizar la interfaz durante la ejecucion.",
         },
     ],
     "G": [
@@ -94,10 +86,6 @@ GLOSSARY_TERMS = {
         {
             "term": "Latencia",
             "definition": "Tiempo de respuesta observado para completar una tarea o etapa del procesamiento.",
-        },
-        {
-            "term": "Linea Base",
-            "definition": "Referencia inicial, normalmente el modo secuencial, para calcular speedup y eficiencia.",
         },
     ],
     "M": [
@@ -147,16 +135,8 @@ GLOSSARY_TERMS = {
             "term": "Speedup",
             "definition": "Cuantas veces es mas rapido un modo paralelo frente al modo secuencial.",
         },
-        {
-            "term": "SSE",
-            "definition": "Server-Sent Events, mecanismo para enviar resultados del backend al navegador en tiempo real.",
-        },
     ],
     "T": [
-        {
-            "term": "Throughput",
-            "definition": "Cantidad de trabajo procesado por unidad de tiempo en una configuracion dada.",
-        },
         {
             "term": "Tiempo de Ejecucion",
             "definition": "Duracion total de una prueba desde su inicio hasta la entrega de resultados.",

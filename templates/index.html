@@ -8,17 +8,21 @@
 </head>
 <body>
   <main class="layout">
-    <header class="panel hero header-flex">
-      <div>
+    <header class="panel hero header-flex home-hero">
+      <div class="hero-copy">
         <h1>Analizador de Escalabilidad</h1>
         <p>Comparativa de rendimiento y simulación de hardware en tiempo real.</p>
+        <div class="hero-tags" aria-label="capacidades del analizador">
+          <span class="hero-tag">CPU</span>
+          <span class="hero-tag">Comparativa multicore</span>
+        </div>
       </div>
       <button id="theme-toggle" class="theme-btn" aria-label="Cambiar tema">
         <span id="theme-icon">🌙</span>
       </button>
     </header>
 
-    <section class="panel">
+    <section class="panel control-panel">
       <form id="benchmark-form" class="form-grid">
         <label>Ruta Dataset <input type="text" name="dataset_path" value="{{ dataset_path }}" required></label>
         <label>Hilos <input type="number" name="workers" min="1" max="32" value="{{ workers }}" required></label>
@@ -26,12 +30,13 @@
         <label>Repeticiones <input type="number" name="repeats" min="1" max="8" value="{{ repeats }}" required></label>
         <div class="form-actions">
           <button type="submit" class="btn-primary">Ejecutar Experimento</button>
+          <button type="button" id="reset-btn" class="btn-reset">Resetear</button>
           <a class="btn-secondary" href="{{ url_for('glossary') }}">Glosario</a>
         </div>
       </form>
     </section>
 
-    <section class="panel animation-panel">
+    <section class="panel animation-panel simulation-panel">
       <div class="status-container">
         <h2>Simulación de Hardware</h2>
         <div class="status-meta">
@@ -43,7 +48,7 @@
         </div>
     </section>
 
-    <section class="panel">
+    <section class="panel metrics-panel">
       <h2>Métricas de Rendimiento</h2>
       <div class="table-responsive">
         <table>

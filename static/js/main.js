@@ -94,20 +94,24 @@ const ChartManager = {
     },
 
     update() {
-        this.instances.time.data.datasets[0].data = [state.sequential?.time_seconds, state.thread?.time_seconds, state.process?.time_seconds];
-        this.instances.speedup.data.datasets[0].data = [1, state.thread?.speedup, state.process?.speedup];
-        this.instances.cpu.data.datasets[0].data = [state.sequential?.cpu_percent, state.thread?.cpu_percent, state.process?.cpu_percent];
-        this.instances.efficiency.data.datasets[0].data = [1, state.thread?.efficiency, state.process?.efficiency];
+        const hasSequential = !!state.sequential;
+        this.instances.time.data.datasets[0].data = [state.sequential?.time_seconds ?? null, state.thread?.time_seconds ?? null, state.process?.time_seconds ?? null];
+        this.instances.speedup.data.datasets[0].data = [hasSequential ? 1 : null, state.thread?.speedup ?? null, state.process?.speedup ?? null];
+        this.instances.cpu.data.datasets[0].data = [state.sequential?.cpu_percent ?? null, state.thread?.cpu_percent ?? null, state.process?.cpu_percent ?? null];
+        this.instances.efficiency.data.datasets[0].data = [hasSequential ? 1 : null, state.thread?.efficiency ?? null, state.process?.efficiency ?? null];
         Object.values(this.instances).forEach(chart => chart.update());
     }
 };
 
 // --- 4. CONTROLADOR PRINCIPAL ---
 const App = {
+    eventSource: null,
+
     init() {
         ChartManager.init();
         this.bindEvents();
         this.initTheme();
+        this.resetAnalyzer(false);
     },
 
     bindEvents() {
@@ -116,14 +120,20 @@ const App = {
             this.runExperiment(new FormData(e.currentTarget));
         });
 
+        document.getElementById("reset-btn").addEventListener("click", () => this.resetAnalyzer());
+
         document.getElementById('theme-toggle').addEventListener('click', () => this.toggleTheme());
     },
 
     runExperiment(formData) {
+        this.closeStream();
         CONFIG.modes.forEach(m => state[m] = null);
         SimVisualizer.setup(parseInt(formData.get('workers')));
+        document.getElementById("status-step").textContent = "0/3";
+        document.getElementById("status-current").textContent = "Ejecutando...";
         
         const source = new EventSource(`/benchmark-stream?${new URLSearchParams(formData)}`);
+        this.eventSource = source;
         let completed = 0;
 
         source.addEventListener("result", (e) => {
@@ -135,7 +145,38 @@ const App = {
             document.getElementById("status-current").textContent = data.label;
         });
 
-        source.addEventListener("done", () => source.close());
+        source.addEventListener("done", () => {
+            source.close();
+            this.eventSource = null;
+        });
+    },
+
+    closeStream() {
+        if (this.eventSource) {
+            this.eventSource.close();
+            this.eventSource = null;
+        }
+    },
+
+    resetAnalyzer(resetForm = true) {
+        this.closeStream();
+
+        if (resetForm) {
+            document.getElementById("benchmark-form").reset();
+        }
+
+        CONFIG.modes.forEach(m => state[m] = null);
+        document.getElementById("status-current").textContent = "Listo";
+        document.getElementById("status-step").textContent = "0/3";
+
+        document.querySelectorAll("#metrics-table-body .metric").forEach((cell) => {
+            cell.textContent = "--";
+        });
+        document.getElementById("thread-workers").textContent = "--";
+        document.getElementById("process-workers").textContent = "--";
+
+        SimVisualizer.container.innerHTML = "";
+        ChartManager.update();
     },
 
     updateUI(data) {
