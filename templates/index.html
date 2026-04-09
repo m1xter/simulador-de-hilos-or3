@@ -21,7 +21,7 @@
     <section class="panel">
       <form id="benchmark-form" class="form-grid">
         <label>Ruta Dataset <input type="text" name="dataset_path" value="{{ dataset_path }}" required></label>
-        <label>Workers <input type="number" name="workers" min="1" max="32" value="{{ workers }}" required></label>
+        <label>Hilos <input type="number" name="workers" min="1" max="32" value="{{ workers }}" required></label>
         <label>Intensidad <input type="number" name="intensity" min="50" value="{{ intensity }}" required></label>
         <label>Repeticiones <input type="number" name="repeats" min="1" max="8" value="{{ repeats }}" required></label>
         <button type="submit" class="btn-primary">Ejecutar Experimento</button>
