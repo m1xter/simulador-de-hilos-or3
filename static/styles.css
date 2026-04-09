@@ -14,7 +14,7 @@
   /* Simulación */
   --sim-bg: rgba(30, 41, 59, 0.05);
   --sim-line: #00ff88;
-  --sim-particle: #ffffff;
+  --sim-particle: #e76f51;
   --sim-core-bg: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
   --sim-core-border: rgba(30, 64, 175, 0.4);
   --sim-core-shadow: rgba(29, 78, 216, 0.3);
